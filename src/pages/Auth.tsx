@@ -4,7 +4,6 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { AuthError } from '@supabase/supabase-js';
 
 const Auth = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -18,38 +17,16 @@ const Auth = () => {
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session);
       if (event === 'SIGNED_IN' && session) {
         navigate('/profile');
-      }
-      if (event === 'USER_UPDATED') {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          setErrorMessage(getErrorMessage(error));
-        }
-      }
-      if (event === 'SIGNED_OUT') {
-        setErrorMessage('');
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const getErrorMessage = (error: AuthError) => {
-    switch (error.message) {
-      case 'Invalid login credentials':
-        return 'Invalid email. Please check your email address and try again.';
-      case 'Email not confirmed':
-        return 'Please check your email for the magic link to sign in.';
-      default:
-        if (error.message.includes('email_provider_disabled')) {
-          return 'Email authentication is not enabled. Please contact the administrator.';
-        }
-        return error.message;
-    }
-  };
 
   return (
     <div className="container max-w-md mx-auto p-6 space-y-6">
