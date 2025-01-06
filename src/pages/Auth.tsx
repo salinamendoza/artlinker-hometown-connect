@@ -57,7 +57,7 @@ const Auth = () => {
           }}
           providers={[]}
           view="magic_link"
-          redirectTo={`${window.location.origin}/profile`}
+          redirectTo="https://preview--artlinker-hometown-connect.lovable.app/profile"
         />
       </div>
     </div>
