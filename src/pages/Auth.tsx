@@ -57,7 +57,7 @@ const Auth = () => {
           }}
           providers={[]}
           view="magic_link"
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/profile`}
         />
       </div>
     </div>
