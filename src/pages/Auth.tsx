@@ -72,6 +72,7 @@ const Auth = () => {
           }}
           providers={[]}
           view="magic_link"
+          redirectTo={window.location.origin + '/auth'}
         />
       </div>
     </div>
