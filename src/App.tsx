@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { RegistrationForm } from "./components/RegistrationForm";
 import { CollectorCard } from "./components/CollectorCard";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             path="/card" 
             element={<CollectorCard name="John Doe" id="7EBJ9IMVQ" />} 
           />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
