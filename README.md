@@ -1,69 +1,53 @@
-# Welcome to your Lovable project
+# Art Collector Platform
+
+A platform connecting art collectors with local artists, fostering hometown pride and creative communities.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/9de5b3de-9dcf-4648-b877-88cef6247fee
+**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Multi-step collector registration
+- Interactive 3D collector cards
+- City-based artist discovery
+- Profile management for collectors and artists
+- Image upload capabilities
+- Brand collaboration opportunities
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9de5b3de-9dcf-4648-b877-88cef6247fee) and start prompting.
+This project is built with:
+- React + Vite for the frontend
+- Tailwind CSS for styling
+- Shadcn UI for components
+- TypeScript for type safety
+- React Router for navigation
+- React Query for data management
+- Supabase for backend services (authentication, database, storage)
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Follow these steps to run the project locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The project can be deployed through Lovable's built-in deployment feature or connected to your own hosting service.
 
-**Use GitHub Codespaces**
+## Contributing
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9de5b3de-9dcf-4648-b877-88cef6247fee) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Contributions are welcome! Please feel free to submit a Pull Request.

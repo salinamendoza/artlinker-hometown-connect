@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import { RegistrationForm } from "./components/RegistrationForm";
+import { CollectorCard } from "./components/CollectorCard";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +17,11 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/register" element={<RegistrationForm />} />
+          <Route 
+            path="/card" 
+            element={<CollectorCard name="John Doe" id="7EBJ9IMVQ" />} 
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
