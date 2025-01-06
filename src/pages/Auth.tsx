@@ -36,6 +36,9 @@ const Auth = () => {
       case 'Email not confirmed':
         return 'Please check your email for the magic link to sign in.';
       default:
+        if (error.message.includes('email_provider_disabled')) {
+          return 'Email authentication is not enabled. Please contact the administrator.';
+        }
         return error.message;
     }
   };
