@@ -13,6 +13,7 @@ interface PreferencesStepProps {
   setFormData: (data: any) => void;
   onBack: () => void;
   onSubmit: () => void;
+  isSubmitting: boolean;
 }
 
 const artMediums = [
@@ -33,7 +34,7 @@ const priceRanges = [
   "Over $50,000",
 ];
 
-export const PreferencesStep = ({ formData, setFormData, onBack, onSubmit }: PreferencesStepProps) => {
+export const PreferencesStep = ({ formData, setFormData, onBack, onSubmit, isSubmitting }: PreferencesStepProps) => {
   const handleMediumToggle = (medium: string) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -98,11 +99,15 @@ export const PreferencesStep = ({ formData, setFormData, onBack, onSubmit }: Pre
       </div>
 
       <div className="flex gap-4">
-        <Button variant="outline" onClick={onBack} className="w-full">
+        <Button variant="outline" onClick={onBack} className="w-full" disabled={isSubmitting}>
           Back
         </Button>
-        <Button onClick={onSubmit} className="w-full">
-          Complete Registration
+        <Button 
+          onClick={onSubmit} 
+          className="w-full" 
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Sending..." : "Complete Registration"}
         </Button>
       </div>
     </div>

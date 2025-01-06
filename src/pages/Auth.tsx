@@ -13,20 +13,45 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/profile');
+        handleAuthenticatedUser(session.user.id);
       }
     });
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
       if (event === 'SIGNED_IN' && session) {
-        navigate('/profile');
+        await handleAuthenticatedUser(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleAuthenticatedUser = async (userId: string) => {
+    try {
+      // Check if there's pending collector data
+      const pendingData = localStorage.getItem('pendingCollectorData');
+      if (pendingData) {
+        // Update the collector profile with the pending data
+        const { error: updateError } = await supabase
+          .from('collectors')
+          .update(JSON.parse(pendingData))
+          .eq('id', userId);
+
+        if (updateError) throw updateError;
+        
+        // Clear the pending data
+        localStorage.removeItem('pendingCollectorData');
+      }
+      
+      // Navigate to profile
+      navigate('/profile');
+    } catch (error: any) {
+      console.error('Error updating collector profile:', error);
+      setErrorMessage(error.message);
+    }
+  };
 
   return (
     <div className="container max-w-md mx-auto p-6 space-y-6">

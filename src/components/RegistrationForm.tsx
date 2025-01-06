@@ -7,6 +7,7 @@ import { PreferencesStep } from "./registration/PreferencesStep";
 
 export const RegistrationForm = () => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -21,25 +22,12 @@ export const RegistrationForm = () => {
   const { toast } = useToast();
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    
     try {
-      // First, save the collector data
-      const { error: collectorError } = await supabase
-        .from('collectors')
-        .update({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          city: formData.city,
-          preferences: {
-            mediums: formData.mediums,
-            priceRange: formData.priceRange,
-            goals: formData.goals
-          }
-        })
-        .eq('email', formData.email);
+      setIsSubmitting(true);
 
-      if (collectorError) throw collectorError;
-
-      // Then send the magic link
+      // First, send the magic link
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: formData.email,
         options: {
@@ -47,10 +35,27 @@ export const RegistrationForm = () => {
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message.includes('rate_limit')) {
+          throw new Error("Please wait a moment before requesting another magic link.");
+        }
+        throw authError;
+      }
+
+      // Store form data in localStorage to be used after authentication
+      localStorage.setItem('pendingCollectorData', JSON.stringify({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        city: formData.city,
+        preferences: {
+          mediums: formData.mediums,
+          priceRange: formData.priceRange,
+          goals: formData.goals
+        }
+      }));
 
       toast({
-        title: "Registration successful!",
+        title: "Registration started!",
         description: "Please check your email for the magic link to complete your registration.",
       });
       
@@ -61,6 +66,8 @@ export const RegistrationForm = () => {
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -83,6 +90,7 @@ export const RegistrationForm = () => {
         setFormData={setFormData}
         onBack={() => setStep(1)}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </form>
   );
