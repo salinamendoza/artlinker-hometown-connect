@@ -32,9 +32,9 @@ const Auth = () => {
   const getErrorMessage = (error: AuthError) => {
     switch (error.message) {
       case 'Invalid login credentials':
-        return 'Invalid email or password. Please check your credentials and try again.';
+        return 'Invalid email. Please check your email address and try again.';
       case 'Email not confirmed':
-        return 'Please verify your email address before signing in.';
+        return 'Please check your email for the magic link to sign in.';
       default:
         return error.message;
     }
@@ -44,7 +44,7 @@ const Auth = () => {
     <div className="container max-w-md mx-auto p-6 space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold">Welcome to Art Collector</h1>
-        <p className="text-muted-foreground">Sign in to manage your collection</p>
+        <p className="text-muted-foreground">Sign in with your email</p>
       </div>
 
       {errorMessage && (
@@ -68,6 +68,7 @@ const Auth = () => {
             },
           }}
           providers={[]}
+          view="magic_link"
         />
       </div>
     </div>
