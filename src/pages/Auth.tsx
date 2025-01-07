@@ -12,6 +12,7 @@ const Auth = () => {
   useEffect(() => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session);
       if (session) {
         handleAuthenticatedUser(session.user.id);
       }
@@ -32,7 +33,9 @@ const Auth = () => {
     try {
       // Check if there's pending collector data
       const pendingData = localStorage.getItem('pendingCollectorData');
+      
       if (pendingData) {
+        console.log('Found pending collector data:', pendingData);
         // Update the collector profile with the pending data
         const { error: updateError } = await supabase
           .from('collectors')
@@ -43,11 +46,10 @@ const Auth = () => {
         
         // Clear the pending data
         localStorage.removeItem('pendingCollectorData');
-        
-        // Navigate to collector card
+        console.log('Cleared pending data, navigating to card');
         navigate('/card');
       } else {
-        // If no pending data, go to collector card
+        console.log('No pending data found, navigating to card');
         navigate('/card');
       }
     } catch (error: any) {
