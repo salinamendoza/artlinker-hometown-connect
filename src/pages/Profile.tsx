@@ -4,9 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, MapPin, Share2 } from "lucide-react";
+import { Loader2, MapPin, Share2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from '@/integrations/supabase/types';
+import { ArtworkCard } from '@/components/ArtworkCard';
 
 interface CollectorProfile {
   first_name: string | null;
@@ -20,14 +21,23 @@ interface CollectorProfile {
   } | Json | null;
 }
 
+interface Artwork {
+  id: string;
+  title: string;
+  artist: string;
+  image_url: string;
+}
+
 const Profile = () => {
   const [profile, setProfile] = useState<CollectorProfile | null>(null);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProfile();
+    fetchArtworks();
   }, []);
 
   const fetchProfile = async () => {
@@ -55,6 +65,28 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchArtworks = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('id, title, artist, image_url')
+        .eq('collector_id', session.user.id);
+
+      if (error) throw error;
+      setArtworks(data || []);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load artworks",
+      });
     }
   };
 
@@ -141,12 +173,21 @@ const Profile = () => {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">My Collection</h2>
-            <Button className="flex items-center gap-2">
-              + Add Artwork
+            <Button onClick={() => navigate('/add-artwork')} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add Artwork
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Placeholder for artwork grid */}
+            {artworks.map((artwork) => (
+              <ArtworkCard
+                key={artwork.id}
+                id={artwork.id}
+                title={artwork.title}
+                artist={artwork.artist}
+                imageUrl={artwork.image_url}
+              />
+            ))}
           </div>
         </div>
       </div>
