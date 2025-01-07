@@ -8,6 +8,7 @@ import { Loader2, MapPin, Share2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Json } from '@/integrations/supabase/types';
 import { ArtworkCard } from '@/components/ArtworkCard';
+import { ProfileError } from '@/components/profile/ProfileError';
 
 interface CollectorProfile {
   first_name: string | null;
@@ -46,21 +47,47 @@ const Profile = () => {
           return;
         }
 
-        const { data, error } = await supabase
+        // Try to get the collector profile
+        const { data: collectorData, error: collectorError } = await supabase
           .from('collectors')
           .select('*')
           .eq('id', session.user.id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (collectorError) throw collectorError;
         
-        if (!data) {
+        if (!collectorData) {
           setError('Profile not found. Please try registering again.');
           return;
         }
 
-        console.log('Profile data loaded:', data);
-        setProfile(data);
+        // Check if we have pending data to save
+        const pendingData = localStorage.getItem('pendingCollectorData');
+        if (pendingData) {
+          const parsedData = JSON.parse(pendingData);
+          const { error: updateError } = await supabase
+            .from('collectors')
+            .update(parsedData)
+            .eq('id', session.user.id);
+
+          if (updateError) throw updateError;
+          
+          // Clear pending data and reload the profile
+          localStorage.removeItem('pendingCollectorData');
+          const { data: updatedData } = await supabase
+            .from('collectors')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle();
+            
+          if (updatedData) {
+            setProfile(updatedData);
+          }
+        } else {
+          setProfile(collectorData);
+        }
+
+        // Load artworks
         await fetchArtworks(session.user.id);
       } catch (error: any) {
         console.error('Error loading profile:', error);
@@ -97,19 +124,6 @@ const Profile = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      navigate('/auth');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to sign out",
-      });
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -119,21 +133,11 @@ const Profile = () => {
   }
 
   if (error) {
-    return (
-      <div className="container mx-auto p-8 max-w-6xl">
-        <div className="bg-destructive/10 text-destructive rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-2">Error Loading Profile</h2>
-          <p>{error}</p>
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={() => navigate('/auth')}
-          >
-            Return to Login
-          </Button>
-        </div>
-      </div>
-    );
+    return <ProfileError message={error} />;
+  }
+
+  if (!profile) {
+    return <ProfileError message="Profile not found. Please try registering again." />;
   }
 
   return (

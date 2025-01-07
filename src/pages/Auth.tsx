@@ -10,15 +10,13 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkPendingData = async () => {
+    const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Initial session check:', session);
       
       if (session) {
         const pendingData = localStorage.getItem('pendingCollectorData');
         if (pendingData) {
           try {
-            // Update the collector profile with the pending data
             const { error: updateError } = await supabase
               .from('collectors')
               .update(JSON.parse(pendingData))
@@ -28,28 +26,40 @@ const Auth = () => {
             
             // Clear the pending data after successful update
             localStorage.removeItem('pendingCollectorData');
-            console.log('Profile updated successfully');
             
-            // Navigate to card page
-            navigate('/card');
+            // Get the updated collector data
+            const { data: collectorData } = await supabase
+              .from('collectors')
+              .select('first_name, last_name')
+              .eq('id', session.user.id)
+              .maybeSingle();
+            
+            if (collectorData) {
+              // Navigate to card with the collector's name
+              navigate('/card', { 
+                state: { 
+                  name: `${collectorData.first_name} ${collectorData.last_name}`,
+                  id: session.user.id 
+                }
+              });
+              return;
+            }
           } catch (error: any) {
             console.error('Error updating collector profile:', error);
             setErrorMessage(error.message);
           }
         } else {
-          // If no pending data, just navigate to profile
+          // If no pending data, navigate to profile
           navigate('/profile');
         }
       }
     };
 
-    checkPendingData();
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      
       if (event === 'SIGNED_IN' && session) {
-        await checkPendingData();
+        await checkSession();
       }
     });
 

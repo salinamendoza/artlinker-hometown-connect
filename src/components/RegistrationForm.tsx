@@ -27,39 +27,69 @@ export const RegistrationForm = () => {
     try {
       setIsSubmitting(true);
 
-      // First, send the magic link
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email: formData.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`
-        }
-      });
-
-      if (authError) {
-        if (authError.message.includes('rate_limit')) {
-          throw new Error("Please wait a moment before requesting another magic link.");
-        }
-        throw authError;
-      }
-
-      // Store form data in localStorage to be used after authentication
-      localStorage.setItem('pendingCollectorData', JSON.stringify({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        city: formData.city,
-        preferences: {
-          mediums: formData.mediums,
-          priceRange: formData.priceRange,
-          goals: formData.goals
-        }
-      }));
-
-      toast({
-        title: "Registration started!",
-        description: "Please check your email for the magic link to complete your registration.",
-      });
+      // First, try to create the collector profile
+      const { data: { session } } = await supabase.auth.getSession();
       
-      navigate("/auth");
+      if (session?.user) {
+        // If we already have a session, update the collector profile
+        const { error: updateError } = await supabase
+          .from('collectors')
+          .update({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            city: formData.city,
+            preferences: {
+              mediums: formData.mediums,
+              priceRange: formData.priceRange,
+              goals: formData.goals
+            }
+          })
+          .eq('id', session.user.id);
+
+        if (updateError) throw updateError;
+        
+        // Navigate to the card after successful update
+        navigate("/card", { 
+          state: { 
+            name: `${formData.firstName} ${formData.lastName}`,
+            id: session.user.id 
+          }
+        });
+      } else {
+        // If no session, send magic link and store data for later
+        const { error: authError } = await supabase.auth.signInWithOtp({
+          email: formData.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth`
+          }
+        });
+
+        if (authError) {
+          if (authError.message.includes('rate_limit')) {
+            throw new Error("Please wait a moment before requesting another magic link.");
+          }
+          throw authError;
+        }
+
+        // Store form data in localStorage to be used after authentication
+        localStorage.setItem('pendingCollectorData', JSON.stringify({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          city: formData.city,
+          preferences: {
+            mediums: formData.mediums,
+            priceRange: formData.priceRange,
+            goals: formData.goals
+          }
+        }));
+
+        toast({
+          title: "Registration started!",
+          description: "Please check your email for the magic link to complete your registration.",
+        });
+        
+        navigate("/auth");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
