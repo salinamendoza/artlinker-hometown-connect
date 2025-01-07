@@ -12,31 +12,40 @@ export type Database = {
       artworks: {
         Row: {
           artist: string | null
+          city_collected: string | null
           collector_id: string | null
           created_at: string | null
+          description: string | null
           id: string
           image_url: string | null
           medium: string | null
+          price: number | null
           title: string | null
           year: string | null
         }
         Insert: {
           artist?: string | null
+          city_collected?: string | null
           collector_id?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
           image_url?: string | null
           medium?: string | null
+          price?: number | null
           title?: string | null
           year?: string | null
         }
         Update: {
           artist?: string | null
+          city_collected?: string | null
           collector_id?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string
           image_url?: string | null
           medium?: string | null
+          price?: number | null
           title?: string | null
           year?: string | null
         }
