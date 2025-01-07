@@ -6,17 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, MapPin, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Json } from '@/integrations/supabase/types';
 
 interface CollectorProfile {
-  first_name: string;
-  last_name: string;
-  email: string;
-  city: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  city: string | null;
   preferences?: {
-    mediums: string[];
-    priceRange: string;
-    goals: string;
-  };
+    mediums?: string[];
+    priceRange?: string;
+    goals?: string;
+  } | Json | null;
 }
 
 const Profile = () => {
@@ -118,7 +119,7 @@ const Profile = () => {
             <div>
               <h3 className="text-muted-foreground mb-3">Preferred Mediums</h3>
               <div className="flex flex-wrap gap-2">
-                {profile?.preferences?.mediums.map((medium) => (
+                {(profile?.preferences as any)?.mediums?.map((medium: string) => (
                   <Badge key={medium} variant="secondary" className="bg-pink-50 text-pink-700 hover:bg-pink-100">
                     {medium}
                   </Badge>
@@ -127,11 +128,11 @@ const Profile = () => {
             </div>
             <div>
               <h3 className="text-muted-foreground mb-3">Price Range</h3>
-              <p>{profile?.preferences?.priceRange}</p>
+              <p>{(profile?.preferences as any)?.priceRange}</p>
             </div>
             <div>
               <h3 className="text-muted-foreground mb-3">Collection Goals</h3>
-              <p>{profile?.preferences?.goals}</p>
+              <p>{(profile?.preferences as any)?.goals}</p>
             </div>
           </div>
         </div>
