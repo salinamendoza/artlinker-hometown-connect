@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CollectorProfile {
@@ -12,6 +12,11 @@ interface CollectorProfile {
   last_name: string;
   email: string;
   city: string;
+  preferences?: {
+    mediums: string[];
+    priceRange: string;
+    goals: string;
+  };
 }
 
 const Profile = () => {
@@ -74,45 +79,75 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mx-auto p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-4">
-            <Avatar className="h-20 w-20">
+    <div className="container mx-auto p-8 max-w-6xl">
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-24 w-24">
               <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${profile?.first_name} ${profile?.last_name}`} />
               <AvatarFallback>
                 {profile?.first_name?.[0]}{profile?.last_name?.[0]}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <CardTitle className="text-2xl">
+            <div>
+              <h1 className="text-3xl font-bold">
                 {profile?.first_name} {profile?.last_name}
-              </CardTitle>
-              <p className="text-muted-foreground">{profile?.email}</p>
-              <p className="text-muted-foreground">Based in {profile?.city}</p>
+              </h1>
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <MapPin className="h-4 w-4" />
+                <span>{profile?.city}</span>
+              </div>
             </div>
+          </div>
+          <div className="flex gap-4">
             <Button variant="outline" onClick={handleSignOut}>
               Sign Out
             </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6">
-              <div>
-                <h3 className="font-semibold mb-2">Collection Highlights</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div 
-                      key={i} 
-                      className="aspect-square bg-muted rounded-lg flex items-center justify-center hover:bg-muted/80 transition-colors cursor-pointer"
-                    >
-                      <p className="text-muted-foreground">Add Artwork</p>
-                    </div>
-                  ))}
-                </div>
+            <Button className="flex items-center gap-2">
+              <Share2 className="h-4 w-4" />
+              Share Collection
+            </Button>
+          </div>
+        </div>
+
+        {/* Collection Preferences */}
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-6">Collection Preferences</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-muted-foreground mb-3">Preferred Mediums</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile?.preferences?.mediums.map((medium) => (
+                  <Badge key={medium} variant="secondary" className="bg-pink-50 text-pink-700 hover:bg-pink-100">
+                    {medium}
+                  </Badge>
+                ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <h3 className="text-muted-foreground mb-3">Price Range</h3>
+              <p>{profile?.preferences?.priceRange}</p>
+            </div>
+            <div>
+              <h3 className="text-muted-foreground mb-3">Collection Goals</h3>
+              <p>{profile?.preferences?.goals}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* My Collection */}
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">My Collection</h2>
+            <Button className="flex items-center gap-2">
+              + Add Artwork
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Placeholder for artwork grid */}
+          </div>
+        </div>
       </div>
     </div>
   );

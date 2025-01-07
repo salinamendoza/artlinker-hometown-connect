@@ -43,10 +43,13 @@ const Auth = () => {
         
         // Clear the pending data
         localStorage.removeItem('pendingCollectorData');
+        
+        // Navigate to collector card
+        navigate('/card');
+      } else {
+        // If no pending data, go to profile
+        navigate('/profile');
       }
-      
-      // Navigate to profile
-      navigate('/profile');
     } catch (error: any) {
       console.error('Error updating collector profile:', error);
       setErrorMessage(error.message);
@@ -82,7 +85,7 @@ const Auth = () => {
           }}
           providers={[]}
           view="magic_link"
-          redirectTo="https://preview--artlinker-hometown-connect.lovable.app/profile"
+          redirectTo={`${window.location.origin}/card`}
         />
       </div>
     </div>
