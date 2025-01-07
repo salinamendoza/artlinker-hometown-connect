@@ -47,8 +47,8 @@ const Auth = () => {
         // Navigate to collector card
         navigate('/card');
       } else {
-        // If no pending data, go to profile
-        navigate('/profile');
+        // If no pending data, go to collector card
+        navigate('/card');
       }
     } catch (error: any) {
       console.error('Error updating collector profile:', error);
