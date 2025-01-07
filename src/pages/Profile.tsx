@@ -124,6 +124,21 @@ const Profile = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/auth');
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
