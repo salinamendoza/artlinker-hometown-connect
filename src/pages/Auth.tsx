@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Auth as SupabaseAuth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from './supabase/client';
+import { Alert, AlertDescription } from './components/ui/alert';
 
 const Auth = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -11,9 +11,15 @@ const Auth = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
       
       if (session) {
+        // Check for pending collector data first
         const pendingData = localStorage.getItem('pendingCollectorData');
         if (pendingData) {
           try {
@@ -23,34 +29,32 @@ const Auth = () => {
               .eq('id', session.user.id);
 
             if (updateError) throw updateError;
-            
-            // Clear the pending data after successful update
             localStorage.removeItem('pendingCollectorData');
             
-            // Get the updated collector data
-            const { data: collectorData } = await supabase
+            // After updating collector data, get their name for the card
+            const { data: collectorData, error: fetchError } = await supabase
               .from('collectors')
               .select('first_name, last_name')
               .eq('id', session.user.id)
-              .maybeSingle();
+              .single();
+            
+            if (fetchError) throw fetchError;
             
             if (collectorData) {
-              // Navigate to card with the collector's name
               navigate('/card', { 
                 state: { 
                   name: `${collectorData.first_name} ${collectorData.last_name}`,
                   id: session.user.id 
                 }
               });
-              return;
             }
           } catch (error: any) {
             console.error('Error updating collector profile:', error);
             setErrorMessage(error.message);
           }
         } else {
-          // If no pending data, navigate to profile
-          navigate('/profile');
+          // If no pending data, simply redirect to card page
+          navigate('/card');
         }
       }
     };
@@ -58,6 +62,7 @@ const Auth = () => {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event);
       if (event === 'SIGNED_IN' && session) {
         await checkSession();
       }
@@ -72,7 +77,7 @@ const Auth = () => {
         <h1 className="text-2xl font-bold">Welcome to Art Collector</h1>
         <p className="text-muted-foreground">Sign in with your email</p>
       </div>
-
+      
       {errorMessage && (
         <Alert variant="destructive">
           <AlertDescription>{errorMessage}</AlertDescription>
