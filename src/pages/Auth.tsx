@@ -10,53 +10,51 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkPendingData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       console.log('Initial session check:', session);
+      
       if (session) {
-        handleAuthenticatedUser(session.user.id);
-      }
-    });
+        const pendingData = localStorage.getItem('pendingCollectorData');
+        if (pendingData) {
+          try {
+            // Update the collector profile with the pending data
+            const { error: updateError } = await supabase
+              .from('collectors')
+              .update(JSON.parse(pendingData))
+              .eq('id', session.user.id);
 
-    // Listen for auth state changes
+            if (updateError) throw updateError;
+            
+            // Clear the pending data after successful update
+            localStorage.removeItem('pendingCollectorData');
+            console.log('Profile updated successfully');
+            
+            // Navigate to card page
+            navigate('/card');
+          } catch (error: any) {
+            console.error('Error updating collector profile:', error);
+            setErrorMessage(error.message);
+          }
+        } else {
+          // If no pending data, just navigate to profile
+          navigate('/profile');
+        }
+      }
+    };
+
+    checkPendingData();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session);
+      
       if (event === 'SIGNED_IN' && session) {
-        await handleAuthenticatedUser(session.user.id);
+        await checkPendingData();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const handleAuthenticatedUser = async (userId: string) => {
-    try {
-      // Check if there's pending collector data
-      const pendingData = localStorage.getItem('pendingCollectorData');
-      
-      if (pendingData) {
-        console.log('Found pending collector data:', pendingData);
-        // Update the collector profile with the pending data
-        const { error: updateError } = await supabase
-          .from('collectors')
-          .update(JSON.parse(pendingData))
-          .eq('id', userId);
-
-        if (updateError) throw updateError;
-        
-        // Clear the pending data
-        localStorage.removeItem('pendingCollectorData');
-        console.log('Cleared pending data, navigating to card');
-        navigate('/card');
-      } else {
-        console.log('No pending data found, navigating to card');
-        navigate('/card');
-      }
-    } catch (error: any) {
-      console.error('Error updating collector profile:', error);
-      setErrorMessage(error.message);
-    }
-  };
 
   return (
     <div className="container max-w-md mx-auto p-6 space-y-6">
@@ -87,7 +85,6 @@ const Auth = () => {
           }}
           providers={[]}
           view="magic_link"
-          redirectTo={`${window.location.origin}/card`}
         />
       </div>
     </div>

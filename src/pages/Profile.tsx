@@ -32,56 +32,63 @@ const Profile = () => {
   const [profile, setProfile] = useState<CollectorProfile | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchProfile();
-    fetchArtworks();
-  }, []);
+    const loadProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
 
-  const fetchProfile = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate('/auth');
-        return;
+        const { data, error } = await supabase
+          .from('collectors')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        if (!data) {
+          setError('Profile not found. Please try registering again.');
+          return;
+        }
+
+        console.log('Profile data loaded:', data);
+        setProfile(data);
+        await fetchArtworks(session.user.id);
+      } catch (error: any) {
+        console.error('Error loading profile:', error);
+        setError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load profile data",
+        });
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const { data, error } = await supabase
-        .from('collectors')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+    loadProfile();
+  }, [navigate, toast]);
 
-      if (error) throw error;
-      setProfile(data);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load profile data",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchArtworks = async () => {
+  const fetchArtworks = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) return;
-
       const { data, error } = await supabase
         .from('artworks')
         .select('id, title, artist, image_url')
-        .eq('collector_id', session.user.id);
+        .eq('collector_id', userId);
 
       if (error) throw error;
       setArtworks(data || []);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error loading artworks:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -94,7 +101,7 @@ const Profile = () => {
     try {
       await supabase.auth.signOut();
       navigate('/auth');
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -107,6 +114,24 @@ const Profile = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-8 max-w-6xl">
+        <div className="bg-destructive/10 text-destructive rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-2">Error Loading Profile</h2>
+          <p>{error}</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => navigate('/auth')}
+          >
+            Return to Login
+          </Button>
+        </div>
       </div>
     );
   }
@@ -127,10 +152,12 @@ const Profile = () => {
               <h1 className="text-3xl font-bold">
                 {profile?.first_name} {profile?.last_name}
               </h1>
-              <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                <MapPin className="h-4 w-4" />
-                <span>{profile?.city}</span>
-              </div>
+              {profile?.city && (
+                <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{profile.city}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex gap-4">
